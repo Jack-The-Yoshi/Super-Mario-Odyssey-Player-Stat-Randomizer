@@ -865,7 +865,9 @@ class PlayerConstRandomizerApp:
             tmp_yml = Path(tmpdir) / "temp_input.yml"
             tmp_byml = Path(tmpdir) / "temp_output.byml"
 
-            tmp_yml.write_text(text, encoding="utf-8")
+            # Remove !l tags BEFORE conversion (prevents duplication bug)
+            clean_text = re.sub(r"!l\s*", "", text)
+            tmp_yml.write_text(clean_text, encoding="utf-8")
 
             self._run_byml_console_script(
                 "yml_to_byml",
@@ -972,6 +974,9 @@ class PlayerConstRandomizerApp:
     # ------------------------------------------------------------
     # Process PlayerConst
     # ------------------------------------------------------------
+    
+    def _restore_int_tags(self, text: str) -> str:
+        return re.sub(r"(\d+)\s+#INT", r"!l \1", text)
 
     def _process_text(self, text, strength, min_float, min_int, keep_zeros):
 
@@ -1014,7 +1019,7 @@ class PlayerConstRandomizerApp:
                     original, strength, min_int, keep_zeros
                 )
 
-                processed_lines.append(f"{indent}{key}: !l {randomized}\n")
+                processed_lines.append(f"{indent}{key}: {randomized}  #INT\n")
 
                 int_count += 1
 
@@ -1066,6 +1071,9 @@ class PlayerConstRandomizerApp:
             min_int=min_int,
             keep_zeros=self.keep_zeros_var.get(),
         )
+        
+        # Restore !l tags safely
+        randomized_text = self._restore_int_tags(randomized_text)
 
         save_path = filedialog.asksaveasfilename(
             title="Save Randomized PlayerConst.byml",
