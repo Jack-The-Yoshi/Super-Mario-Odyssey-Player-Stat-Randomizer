@@ -887,7 +887,7 @@ class PlayerConstRandomizerApp:
         self._log(f"Generated seed: {seed}")
 
     # ------------------------------------------------------------
-    # Randomization Logic (UNCHANGED)
+    # Randomization Logic
     # ------------------------------------------------------------
 
     def _validate_settings(self):
